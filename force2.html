@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>d3-force</title>
+  <script src="./bower_components/d3/d3.js"></script>
+</head>
+<body>
+  <canvas id="canvas" width="800" height="600"></canvas>
+  <script>
+    // nodes / links
+    let oC = document.querySelector('#canvas')
+    let gd = oC.getContext('2d')
+
+    const data = [
+      {name: '电影', child: ['敦刻尔克', '勇士', '天堂电影院', '闻香识女人']},
+      {name: '美剧', child: ['纸牌屋', '绝命毒师', '权力的游戏']},
+      {name: '游戏', child: ['塞尔达传说', '怪物猎人', '异度神剑2']}
+    ]
+
+    let nodes = []
+    let links = []
+
+    nodes.push({name: '分类'})
+
+    data.forEach(data => {
+      nodes.push({name: data.name})
+      links.push({source: '分类', target: data.name, value: 150})
+
+      data.child.forEach(childName => {
+        nodes.push({name: childName})
+        links.push({source: data.name, target: childName, value: 20})
+      })
+    })
+
+    let sim = d3.forceSimulation()
+
+    sim.nodes(nodes)
+      .force('link', d3.forceLink(links).id(item => item.name).distance(item => item.value))
+      .force('charge', d3.forceManyBody())
+      .force('center', d3.forceCenter(oC.width / 2, oC.height / 2))
+
+    sim.on('tick', () => {
+      gd.clearRect(0, 0, oC.width, oC.height)
+      // link
+      links.forEach(link => {
+        gd.beginPath()
+
+        gd.moveTo(link.source.x, link.source.y)
+        gd.lineTo(link.target.x, link.target.y)
+
+        gd.strokeStyle = '#999'
+        gd.stroke()
+      })
+
+      nodes.forEach(node => {
+        // node本身
+        gd.beginPath()
+
+        gd.arc(node.x, node.y, 3, 0, Math.PI * 2, true)
+        gd.fillStyle = 'black'
+        gd.fill()
+        
+        gd.font = '20px 微软雅黑'
+        gd.fillText(node.name, node.x, node.y)
+      })
+    })
+  </script>
+</body>
+</html>
